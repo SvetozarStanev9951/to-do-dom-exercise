@@ -71,5 +71,11 @@ button {
   height: 35px;
   width: 80px;
   border: none;
-  background-color: inherit;
+  background-color: rgba(240, 248, 255);
+  opacity: 0.3;
+  transition: all 0.2s ease-in;
+}
+
+button:hover {
+  opacity: 1;
 }

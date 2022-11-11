@@ -11,9 +11,11 @@ function preserveToDos() {
 }
 
 function loadToDos() {
-  const loadedToDos = window.sessionStorage.getItem("todos").split(",");
+  const loadedToDos = window.sessionStorage
+    .getItem("todos")
+    .split(",")
+    .filter((el) => el);
   if (loadedToDos && loadedToDos.length > 0) {
-    console.log(loadedToDos);
     loadedToDos.forEach((toDo) => {
       toDoContainer.appendChild(createToDo(toDo));
     });
