@@ -79,3 +79,8 @@ button {
 button:hover {
   opacity: 1;
 }
+
+input[type="checkbox"] {
+  height: 22px;
+  width: 22px;
+}
