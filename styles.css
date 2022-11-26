@@ -69,11 +69,12 @@ input {
 button {
   cursor: pointer;
   height: 35px;
-  width: 80px;
+  width: fit-content;
   border: none;
   background-color: rgba(240, 248, 255);
   opacity: 0.3;
   transition: all 0.2s ease-in;
+  padding: 0 20px;
 }
 
 button:hover {
@@ -90,4 +91,22 @@ button:hover {
 }
 #to-do-container-done {
   width: 50%;
+}
+
+input[type="checkbox"] {
+  height: 22px;
+  width: 22px;
+}
+
+select {
+  width: fit-content;
+  padding: 10px;
+  background: rgba(240, 248, 255, 0.3);
+  border: none;
+  margin-left: 15px;
+}
+
+select:focus-visible {
+  border: none;
+  outline: inherit;
 }

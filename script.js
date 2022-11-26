@@ -7,17 +7,21 @@ const toDoContainerInProgress = document.querySelector(
   "#to-do-container-in-progress"
 );
 const toDoInput = document.getElementsByTagName("input")[0];
+const toDoSourceElement = document.getElementById("todo-source-select");
 
 let toDos = [];
+let localToDos = [];
+let remoteToDos = [];
+let toDosSource = toDoSourceElement.value;
 
 function saveToDos() {
-  window[STORAGE].setItem(TODOS_STORAGE_KEYS, JSON.stringify(toDos));
+  window[STORAGE].setItem(TODOS_STORAGE_KEYS, JSON.stringify(localToDos));
 }
 
 function loadToDos() {
   const storedToDos = JSON.parse(window[STORAGE].getItem(TODOS_STORAGE_KEYS));
   if (storedToDos) {
-    toDos = storedToDos;
+    localToDos = storedToDos;
   }
 }
 
@@ -26,27 +30,33 @@ function createToDoElement(todo) {
   divElement.classList.add("to-do-instance");
 
   const pElement = document.createElement("p");
-  pElement.textContent = todo.content;
+  console.log(todo);
+  console.log(todo["title"]);
 
-  const deleteBtn = document.createElement("button");
-  deleteBtn.textContent = "❌";
-  deleteBtn.addEventListener("click", () => {
-    deleteToDo(todo.content);
-  });
+  pElement.textContent = todo.content ?? todo.title;
 
-  const divDate = document.createElement("div");
-  divDate.classList.add("to-do-date");
-  divDate.textContent = todo.date;
+  if (toDosSource === "local") {
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "❌";
+    deleteBtn.addEventListener("click", () => {
+      deleteToDo(todo.content);
+    });
+    divElement.appendChild(deleteBtn);
+  }
 
   const checkBox = document.createElement("input");
   checkBox.setAttribute("type", "checkbox");
   checkBox.checked = todo.completed;
-  checkBox.addEventListener("click", () => toggleDone(todo));
+  checkBox.addEventListener("click", () => {
+    toggleDone(todo);
+    if (toDosSource === "local") {
+      saveToDos();
+    }
+    renderToDos();
+  });
 
-  divElement.appendChild(divDate);
   divElement.appendChild(checkBox);
   divElement.appendChild(pElement);
-  divElement.appendChild(deleteBtn);
 
   return divElement;
 }
@@ -54,6 +64,7 @@ function createToDoElement(todo) {
 function renderToDos() {
   toDoContainerDone.innerHTML = "";
   toDoContainerInProgress.innerHTML = "";
+  toDos = toDosSource === "local" ? localToDos : remoteToDos;
   toDos.forEach((todo) => {
     const newToDoElement = createToDoElement(todo);
     if (todo.completed) {
@@ -66,22 +77,24 @@ function renderToDos() {
 
 function addToDo() {
   const validText = toDoInput.value.trim();
-  if (!validText) alert("Not good");
+  if (!validText) {
+    alert("Not good");
+    return;
+  }
 
   const toDoObj = {
     content: validText,
-    date: new Date(Date.now()).toLocaleDateString(),
     completed: false,
   };
 
-  toDos.push(toDoObj);
+  localToDos.push(toDoObj);
   toDoInput.value = "";
   saveToDos();
   renderToDos();
 }
 
 function deleteToDo(todo) {
-  toDos = toDos.filter((el) => el.content !== todo);
+  localToDos = localToDos.filter((el) => el.content !== todo);
   saveToDos();
   loadToDos();
   renderToDos();
@@ -89,6 +102,19 @@ function deleteToDo(todo) {
 
 function toggleDone(todo) {
   todo.completed = !todo.completed;
+}
+
+function fetchRemoteTodos() {
+  return fetch("https://jsonplaceholder.typicode.com/todos?userId=1")
+    .then((res) => res.json())
+    .then((res) => (remoteToDos = res));
+}
+
+async function handleToDoSource() {
+  if (remoteToDos.length === 0) {
+    remoteToDos = await fetchRemoteTodos();
+  }
+  toDosSource = toDoSourceElement.value;
   renderToDos();
 }
 
@@ -96,3 +122,4 @@ loadToDos();
 renderToDos();
 
 addToDoBtn.addEventListener("click", addToDo);
+toDoSourceElement.addEventListener("change", handleToDoSource);
